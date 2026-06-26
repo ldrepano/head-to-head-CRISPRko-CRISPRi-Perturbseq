@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
+plt.rc('pdf', fonttype=42)
+
 
 #first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
 #first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
@@ -88,7 +90,7 @@ sns.lineplot(data=tpr_fpr_df_ko, x='False Positive Rate',y='True Positive Rate',
     errorbar=None,color="dodgerblue")
 sns.despine()
 plt.title("CRISPRko")
-plt.savefig("../figures/CRISPRko_ROC_signedpvalcorrelation.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/CRISPRko_ROC_signedpvalcorrelation.pdf",bbox_inches="tight",dpi=600)
 
 tpr_fpr_df_i=pd.concat([tpr_fpr_df_CRISPRi_d14,tpr_fpr_df_CRISPRi_d10,tpr_fpr_df_CRISPRi_d7,tpr_fpr_df_CRISPRi_d4])
 
@@ -98,7 +100,7 @@ sns.lineplot(data=tpr_fpr_df_i, x='False Positive Rate',y='True Positive Rate',
     errorbar=None,color="limegreen")
 sns.despine()
 plt.title("CRISPRi")
-plt.savefig("../figures/CRISPRi_ROC_signedpvalcorrelation.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/CRISPRi_ROC_signedpvalcorrelation.pdf",bbox_inches="tight",dpi=600)
 
 #repeat for A549
 
@@ -116,6 +118,6 @@ sns.lineplot(data=tpr_fpr_df_A549, x='False Positive Rate',
              y='True Positive Rate',hue="Modality",errorbar=None,palette=["dodgerblue","limegreen"])
 sns.despine()
 plt.title("ROC: signed p-value correlation of guides\ntargeting the same vs. different gene\nDay 7 A549")
-plt.savefig("../figures/A549_ROC_signedpvalcorrelation.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/A549_ROC_signedpvalcorrelation.pdf",bbox_inches="tight",dpi=600)
 
 

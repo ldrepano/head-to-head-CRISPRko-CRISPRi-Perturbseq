@@ -6,6 +6,7 @@ import seaborn as sns
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+plt.rc('pdf', fonttype=42)
 
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
@@ -105,7 +106,7 @@ for target in day7_SCEPTRE_results_CRISPRi["grna_target"].unique().tolist():
 
 ax[0,0].set_ylabel("log(foldchange)")
 
-plt.savefig("../figures/day7_CRISPRi_neighbordownreg_violinplots.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/day7_CRISPRi_neighbordownreg_violinplots.pdf",bbox_inches="tight",dpi=600)
 
 #repeat for CRISPRko
 
@@ -139,5 +140,5 @@ ax[0].set_ylabel("log(foldchange)")
 
 
 
-plt.savefig("../figures/day7_CRISPRko_neighbordownreg_violinplots.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/day7_CRISPRko_neighbordownreg_violinplots.pdf",bbox_inches="tight",dpi=600)
 

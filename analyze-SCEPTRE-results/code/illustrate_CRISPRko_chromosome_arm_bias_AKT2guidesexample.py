@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
+plt.rc('pdf', fonttype=42)
 
 #first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
 guideref=pd.read_csv("../../reference/CRISPRko-CRISPRi-perturbseq-benchmark-guides.csv")
@@ -137,7 +138,7 @@ ax[3,1].set_xlabel("Position (bp) along chr19 (hg38)")
 ax[3,1].set_title("CRISPRi guide AKT2_4")
 ax[3,1].set_xlim(1,chromosome_19_length)
 
-plt.savefig("../figures/AKT2_Dayarmeffectrugplot.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/AKT2_Dayarmeffectrugplot.pdf",bbox_inches="tight",dpi=600)
 
 
 

@@ -6,6 +6,8 @@ import seaborn as sns
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
+plt.rc('pdf', fonttype=42)
+
 
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
@@ -66,7 +68,7 @@ ax[1].set_ylabel("# affected genes")
 ax[1].tick_params(axis='x', labelrotation=90)
 ax[1].set_title("CRISPRi Day 4")
 
-plt.savefig("../figures/n_DE_genes_per_target_d4.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/n_DE_genes_per_target_d4.pdf",bbox_inches="tight",dpi=600)
 
 (fig,ax)=plt.subplots(1,2,figsize=(8,3), layout="constrained")
 
@@ -88,5 +90,5 @@ ax[1].set_ylabel("# affected genes")
 ax[1].tick_params(axis='x', labelrotation=90)
 ax[1].set_title("CRISPRi Day 7")
 
-plt.savefig("../figures/n_DE_genes_per_target_d7.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/n_DE_genes_per_target_d7.pdf",bbox_inches="tight",dpi=600)
 

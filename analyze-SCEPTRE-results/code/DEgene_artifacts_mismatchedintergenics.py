@@ -6,6 +6,8 @@ import seaborn as sns
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
+plt.rc('pdf', fonttype=42)
+
 
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
@@ -76,7 +78,7 @@ def plot_guidecounts(up_in_ko_df,up_in_i_df,sample):
 	ax[1].set_xlabel("# CRISPRi guides for which\ngene is downregulated")
 	ax[1].set_ylabel("")
 
-	plt.savefig("../figures/DEgene_artifacts_mismatchedintergenics/up_in_ko_"+sample+".png",bbox_inches="tight",dpi=600)
+	plt.savefig("../figures/DEgene_artifacts_mismatchedintergenics/up_in_ko_"+sample+".pdf",bbox_inches="tight",dpi=600)
 
 	#repeat for genes upregulated in CRISPRi perturbed cells
 
@@ -106,7 +108,7 @@ def plot_guidecounts(up_in_ko_df,up_in_i_df,sample):
 	ax[1].set_xlabel("# CRISPRi guides for which\ngene is upregulated")
 	ax[1].set_ylabel("")
 
-	plt.savefig("../figures/DEgene_artifacts_mismatchedintergenics/up_in_i_"+sample+".png",bbox_inches="tight",dpi=600)
+	plt.savefig("../figures/DEgene_artifacts_mismatchedintergenics/up_in_i_"+sample+".pdf",bbox_inches="tight",dpi=600)
 
 
 plot_guidecounts(d4_up_in_ko,d4_up_in_i,"Day 4 K562")

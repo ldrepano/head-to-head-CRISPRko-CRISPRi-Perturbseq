@@ -6,6 +6,8 @@ import seaborn as sns
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
+plt.rc('pdf', fonttype=42)
+
 
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
@@ -59,6 +61,6 @@ ax[1].scatter(SCEPTRE_results_CRISPRi_target_sig.index,SCEPTRE_results_CRISPRi_t
 
 fig.suptitle("Perturbation effect on all qc-passing transcripts, target in blue")
 
-plt.savefig("../figures/K562_Day14_Target_Downregulation_violinplots.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/K562_Day14_Target_Downregulation_violinplots.pdf",bbox_inches="tight",dpi=600)
 
 

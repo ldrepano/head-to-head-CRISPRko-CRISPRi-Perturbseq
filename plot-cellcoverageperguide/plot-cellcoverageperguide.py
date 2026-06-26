@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+plt.rc('pdf', fonttype=42)
 
 color_dictionary={"CRISPRko": 'dodgerblue', "CRISPRi": 'limegreen'}
 
@@ -38,7 +39,7 @@ def plot_counts(sample_name,df):
 	plt.title(sample_name)
 	plt.ylabel("# Cells assigned per guide")
 	plt.xlabel("Guide target")
-	plt.savefig("figures/"+sample_name+".png",dpi=600,bbox_inches="tight")
+	plt.savefig("figures/"+sample_name+".pdf",dpi=600,bbox_inches="tight")
 
 
 plot_counts("K562 Day4",K562_Day4)
@@ -67,4 +68,4 @@ plt.ylim(0,108)
 for container in ax.containers:
     ax.bar_label(container, padding=-1,fontsize=15)
 plt.title("K562 Perturb-seq recovery rates")
-plt.savefig("figures/K562_percentlibraryrecovered_persample.png",dpi=600,bbox_inches="tight")
+plt.savefig("figures/K562_percentlibraryrecovered_persample.pdf",dpi=600,bbox_inches="tight")

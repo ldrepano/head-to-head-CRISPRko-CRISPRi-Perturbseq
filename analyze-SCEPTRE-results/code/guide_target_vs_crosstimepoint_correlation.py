@@ -9,6 +9,8 @@ from sklearn.metrics import roc_curve, auc
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 from adjustText import adjust_text
+plt.rc('pdf', fonttype=42)
+
 
 #first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
 guideref=pd.read_csv("../../reference/CRISPRko-CRISPRi-perturbseq-benchmark-guides.csv")
@@ -125,7 +127,7 @@ def make_correlation_scatterplot(df,name):
 	plt.ylim(0,1)
 	plt.title(name)
 	plt.axline([0, 0], slope=1, color='black', linestyle='--')
-	plt.savefig("../figures/"+name+"_vs_withingene_correlation_K562.png",bbox_inches="tight",dpi=600)
+	plt.savefig("../figures/"+name+"_vs_withingene_correlation_K562.pdf",bbox_inches="tight",dpi=600)
 
 
 make_correlation_scatterplot(d4_v_7_CRISPRko_correlations,"Day 4 vs 7 CRISPRko")

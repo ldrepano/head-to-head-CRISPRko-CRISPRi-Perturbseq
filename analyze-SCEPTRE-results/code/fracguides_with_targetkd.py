@@ -6,6 +6,7 @@ import seaborn as sns
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
+plt.rc('pdf', fonttype=42)
 
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
@@ -75,6 +76,6 @@ plt.title("Target knockdown rates")
 plt.ylim(0,105)
 plt.legend(loc="lower left")
 
-plt.savefig("../figures/frac_guides_with_target_kd.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/frac_guides_with_target_kd.pdf",bbox_inches="tight",dpi=600)
 
 

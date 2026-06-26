@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
+plt.rc('pdf', fonttype=42)
+
 
 
 #identified from cross-time-point scatter plots
@@ -75,6 +77,6 @@ sns.lineplot(data=tpr_fpr_df, x='False Positive Rate',
              y='True Positive Rate',style="Guides included",errorbar=None,color="black")
 sns.despine()
 plt.title("ROC: signed p-value correlation of CRISPRko guides to CRISPRi guides\ntargeting the same vs. different gene\nDay 14 K562")
-plt.savefig("../figures/crossmodality_ROC_signedpvalcorrelation_d14K562.png",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/crossmodality_ROC_signedpvalcorrelation_d14K562.pdf",bbox_inches="tight",dpi=600)
 
 
