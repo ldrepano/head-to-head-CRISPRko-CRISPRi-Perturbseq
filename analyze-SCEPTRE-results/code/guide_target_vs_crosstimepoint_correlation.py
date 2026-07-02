@@ -1,16 +1,18 @@
 #5/29/2026
-#identifying promiscuous guides; ~=those poorly correlated with others targeting the same gene
+#identifying promiscuous guides; ~=those poorly correlated with others targeting the same gene but highly reproducible
 
 import pandas as pd
 import seaborn as sns 
 import numpy as np 
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
+from sklearn.linear_model import LinearRegression
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 from adjustText import adjust_text
 plt.rc('pdf', fonttype=42)
 
+color_dictionary={"CRISPRko": 'dodgerblue', "CRISPRi": 'limegreen'}
 
 #first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
 guideref=pd.read_csv("../../reference/CRISPRko-CRISPRi-perturbseq-benchmark-guides.csv")
@@ -45,13 +47,8 @@ def processdata(sceptre_results_filepath):
 
 	return (SCEPTRE_results_CRISPRko,SCEPTRE_results_CRISPRi)
 
-day4_SCEPTRE_results_CRISPRko,day4_SCEPTRE_results_CRISPRi=processdata("../SCEPTRE-results/d4_K562_SCEPTRE_results.csv")
 day7_SCEPTRE_results_CRISPRko,day7_SCEPTRE_results_CRISPRi=processdata("../SCEPTRE-results/d7_K562_SCEPTRE_results.csv")
 day10_SCEPTRE_results_CRISPRko,day10_SCEPTRE_results_CRISPRi=processdata("../SCEPTRE-results/d10_K562_SCEPTRE_results.csv")
-day14_SCEPTRE_results_CRISPRko,_=processdata("../SCEPTRE-results/d14_K562_CRISPRko_SCEPTRE_results.csv")
-_,day14_SCEPTRE_results_CRISPRi=processdata("../SCEPTRE-results/d14_K562_CRISPRi_SCEPTRE_results.csv")
-
-
 
 def get_correlations(timepoint1,timepoint2):
 
@@ -76,7 +73,7 @@ def get_correlations(timepoint1,timepoint2):
 	timepoint1_long["same_target_gene"]=timepoint1_long.apply(lambda x: x["grna_id"].split("_")[0]==x["other_grna_id"].split("_")[0],axis=1)
 	timepoint1_samegene=timepoint1_long[timepoint1_long["same_target_gene"]]
 
-	#repeat for rep2
+	#repeat for timepoint2
 	timepoint2 = timepoint2.corr(numeric_only=True)
 	timepoint2_long=pd.melt(timepoint2,ignore_index=False)
 	timepoint2_long["other_grna_id"]=timepoint2_long.index
@@ -95,47 +92,125 @@ def get_correlations(timepoint1,timepoint2):
 
 
 
-d4_v_7_CRISPRko_correlations=get_correlations(day4_SCEPTRE_results_CRISPRko,day7_SCEPTRE_results_CRISPRko)
-d4_v_7_CRISPRi_correlations=get_correlations(day4_SCEPTRE_results_CRISPRi,day7_SCEPTRE_results_CRISPRi)
-
-
 d7_v_10_CRISPRko_correlations=get_correlations(day7_SCEPTRE_results_CRISPRko,day10_SCEPTRE_results_CRISPRko)
 d7_v_10_CRISPRi_correlations=get_correlations(day7_SCEPTRE_results_CRISPRi,day10_SCEPTRE_results_CRISPRi)
 
-d14_v_10_CRISPRko_correlations=get_correlations(day10_SCEPTRE_results_CRISPRko,day14_SCEPTRE_results_CRISPRko)
-d14_v_10_CRISPRi_correlations=get_correlations(day10_SCEPTRE_results_CRISPRi,day14_SCEPTRE_results_CRISPRi)
+
+# plot modalities separately
+def plot_modalities_separately(CRISPRko_df, CRISPRi_df):
+	(fig,ax)=plt.subplots(1,2,figsize=(10,5),layout="constrained")
+	plt.suptitle("Guide agreement with others targeting the same gene vs. reproducibility")
+
+	modality="CRISPRko"
+	ax[0].axline([0, 0], slope=1, color='black', linestyle='--',label="x=y")
+	ax[0].legend(loc="lower right")
+	ax[0].scatter(data=CRISPRko_df,x="median_corr",y="guide_crosstime_corr",c=color_dictionary[modality])
+
+	ax[0].set_xlabel("Correlation with other guides targeting the same gene")
+	ax[0].set_ylabel("Guide correlation Day 7 vs Day 10")
+	ax[0].set_xlim(-0.01,1.01)
+	ax[0].set_ylim(-0.01,1.01)
+	ax[0].set_title(modality)
+
+	modality="CRISPRi"
+	ax[1].axline([0, 0], slope=1, color='black', linestyle='--',label="x=y")
+	ax[1].legend(loc="lower right")
+	ax[1].scatter(data=CRISPRi_df,x="median_corr",y="guide_crosstime_corr",c=color_dictionary[modality])
+
+	ax[1].set_xlabel("Correlation with other guides targeting the same gene")
+	ax[1].set_ylabel("Guide correlation Day 7 vs Day 10")
+	ax[1].set_xlim(-0.01,1.01)
+	ax[1].set_ylim(-0.01,1.01)
+	ax[1].set_title(modality)
+
+	plt.savefig("../figures/d7_vs_d10CRISPRkoCRISPRi_vs_withingene_correlation_K562.pdf",bbox_inches="tight",dpi=600)
+
+plot_modalities_separately(d7_v_10_CRISPRko_correlations,d7_v_10_CRISPRi_correlations)
+
+#plot modalities together to identify promiscuous guides (high positive residuals)
+def get_scatterplot_with_outliers(df):
+	df["modality_color"]=[color_dictionary[modality] for modality in df["modality"].tolist()]
+
+	plt.figure(figsize=(5,5))
+	plt.scatter(
+		x=df["median_corr"],
+		y=df["guide_crosstime_corr"],
+		c=df["modality_color"])
 
 
-def make_correlation_scatterplot(df,name):
-	plt.figure()
-	plt.scatter(data=df,x="median_corr",y="guide_crosstime_corr",c="black")
+	#identify outliers in plot of cross-guide vs cross sample correlation (potential promiscuous guides)
+	# identify outliers with both modalities at once
 
-	#label guides whose replicate correlation is at least 3x its correlation to other guides targeting the same gene
-	potential_promiscuous_guides=df[(df["median_corr"]*3) < (df["guide_crosstime_corr"])]
-	promiscuous_guide_labels=[guide_to_shortid[guide] for guide in potential_promiscuous_guides["other_grna_id"].tolist()]
-	promiscuous_guide_targetcorr=potential_promiscuous_guides["median_corr"].tolist()
+	#get vertical residuals from x=y line 
+	df['residual'] = (df['guide_crosstime_corr'] - df['median_corr'])
+
+	# zscore residuals
+	residual_mean=df['residual'].mean()
+	residual_sd=df['residual'].std()
+	df["z_scored_residuals"]=(df['residual']-residual_mean)/residual_sd
+
+	#residual that yields a z-score of 2
+	z_2=2*residual_sd+residual_mean
+
+	#plot fitted regression and outlier cutoff 
+	plt.axline(xy1=(0,0), slope=1, color='black', linestyle='-',label="x=y")
+	plt.axline(xy1=(0,0+z_2), slope=1, color='black', linestyle='--',label="Residual Z-score = 2")
+	plt.legend()
+
+	# Filter for positive outliers
+	positive_outliers = df[(df['z_scored_residuals'] > 2) & (df['residual'] > 0)]
+
+	promiscuous_guide_labels=[guide_to_shortid[guide] for guide in positive_outliers["other_grna_id"].tolist()]
+	promiscuous_guide_targetcorr=positive_outliers["median_corr"].tolist()
+	promiscuous_guide_modalitycolor=positive_outliers["modality_color"].tolist()
 	texts=[]
-	promiscuous_guide_repcorr=potential_promiscuous_guides["guide_crosstime_corr"].tolist()
+	promiscuous_guide_repcorr=positive_outliers["guide_crosstime_corr"].tolist()
 	for i, txt in enumerate(promiscuous_guide_labels):
-		texts.append(plt.text(promiscuous_guide_targetcorr[i], promiscuous_guide_repcorr[i], txt,c="blue"))
+		texts.append(plt.text(promiscuous_guide_targetcorr[i]+0.005, promiscuous_guide_repcorr[i]+0.005, txt,c=promiscuous_guide_modalitycolor[i]))
 		
-	adjust_text(texts, arrowprops=dict(arrowstyle='->', color='blue'),force_text=(0.2,0.4))
+	plt.xlabel("Correlation with other guides targeting the same gene")
+	plt.ylabel("Correlation Day 7 vs. Day 10")
+	plt.xlim(-0.01,1.01)
+	plt.ylim(-0.01,1.01)
+	plt.title("CRISPRko + CRISPRi")
+	plt.savefig("../figures/d7_vs_d10_identifyoutliers.pdf",bbox_inches="tight",dpi=600)
 
-	plt.xlabel("Median correlation of guide with others targeting the same gene")
-	plt.ylabel("Guide correlation across time points\n(separate transduction)")
-	plt.xlim(0,1)
-	plt.ylim(0,1)
-	plt.title(name)
-	plt.axline([0, 0], slope=1, color='black', linestyle='--')
-	plt.savefig("../figures/"+name+"_vs_withingene_correlation_K562.pdf",bbox_inches="tight",dpi=600)
+	return df
 
 
-make_correlation_scatterplot(d4_v_7_CRISPRko_correlations,"Day 4 vs 7 CRISPRko")
-make_correlation_scatterplot(d4_v_7_CRISPRi_correlations,"Day 4 vs 7 CRISPRi")
-make_correlation_scatterplot(d7_v_10_CRISPRko_correlations,"Day 7 vs 10 CRISPRko")
-make_correlation_scatterplot(d7_v_10_CRISPRi_correlations,"Day 7 vs 10 CRISPRi")
-make_correlation_scatterplot(d14_v_10_CRISPRko_correlations,"Day 10 vs 14 CRISPRko")
-make_correlation_scatterplot(d14_v_10_CRISPRi_correlations,"Day 10 vs 14 CRISPRi")
+d7_v_10_CRISPRko_correlations["modality"]= "CRISPRko"
+d7_v_10_CRISPRi_correlations["modality"]= "CRISPRi"
+d7_v_10_correlations=pd.concat([d7_v_10_CRISPRko_correlations,d7_v_10_CRISPRi_correlations])
+d7_v_10_correlations_withresiduals=get_scatterplot_with_outliers(d7_v_10_correlations)
 
+#examine association between putative off-target activity and abundance of GGs in seed 
+d7_v_10_correlations_withresiduals["seed"]=d7_v_10_correlations_withresiduals["other_grna_id"].apply(lambda x: x[-12:])
+d7_v_10_correlations_withresiduals["num_GG_in_seed"]=d7_v_10_correlations_withresiduals["seed"].apply(lambda x: x.count("GG"))
+
+CRISPRidata_withresiduals=d7_v_10_correlations_withresiduals[d7_v_10_correlations_withresiduals["modality"]=="CRISPRi"]
+
+plt.figure(figsize=(5,5))
+plt.scatter(data=CRISPRidata_withresiduals[CRISPRidata_withresiduals["num_GG_in_seed"]==0],
+	x="median_corr",y="guide_crosstime_corr",
+	c="white",edgecolors='lightgrey', linewidths=0.5,
+	s=60,label=0)
+plt.scatter(data=CRISPRidata_withresiduals[CRISPRidata_withresiduals["num_GG_in_seed"]==1],
+	x="median_corr",y="guide_crosstime_corr",
+	c="limegreen",alpha=0.2,
+	s=60,label=1)
+plt.scatter(data=CRISPRidata_withresiduals[CRISPRidata_withresiduals["num_GG_in_seed"]==2],
+	x="median_corr",y="guide_crosstime_corr",
+	c="limegreen",s=60,label=2)
+plt.scatter(data=CRISPRidata_withresiduals[CRISPRidata_withresiduals["num_GG_in_seed"]==3],
+	x="median_corr",y="guide_crosstime_corr",
+	c="darkgreen",s=60,label=3)
+plt.legend(title="#GG in 12bp seed")
+plt.axline([0, 0], slope=1, color='black', linestyle='--')
+plt.xlabel("Correlation with other guides targeting the same gene")
+plt.ylabel("Guide correlation Day 7 vs Day 10")
+plt.xlim(-0.01,1.01)
+plt.ylim(-0.01,1.01)
+plt.title("Sequence composition of CRISPRi guides")
+plt.savefig("../figures/CRISPRi_offtargetactivity_vsGGabundance.pdf",bbox_inches="tight",dpi=600)
 
 

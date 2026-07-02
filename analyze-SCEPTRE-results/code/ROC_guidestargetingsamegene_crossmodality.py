@@ -12,8 +12,11 @@ plt.rc('pdf', fonttype=42)
 
 
 
-#identified from cross-time-point scatter plots
-promiscuous_CRISPRi_guides=["STK24_AGCAGTAGCGGCAGCAGCGG","SH3KBP1_GAGTCGCCCCGGGGCAGCAG","PYGB_GAGATGGAGGAGGAAAGCGG"]
+#guides identified as promiscuous from cross-guide vs cross-sample correlation analysis 
+promiscuous_CRISPRi_labels=["STK24_3","SH3KBP1_4","PYGB_2","IFT25_3","AKT2_2", "TMSB10_1","PDHA1_3"]
+guideref=pd.read_csv("../../reference/CRISPRko-CRISPRi-perturbseq-benchmark-guides.csv")
+short_to_long_id=guideref.set_index("guide_id_short").to_dict()["guide_id_long"]
+promiscuous_CRISPRi_guides=[short_to_long_id[guide] for guide in promiscuous_CRISPRi_labels]
 
 def processdata(sceptre_results_filepath):
 	SCEPTRE_results=pd.read_csv(sceptre_results_filepath)
@@ -76,7 +79,7 @@ plt.subplots(figsize=(4, 4))
 sns.lineplot(data=tpr_fpr_df, x='False Positive Rate',
              y='True Positive Rate',style="Guides included",errorbar=None,color="black")
 sns.despine()
-plt.title("ROC: signed p-value correlation of CRISPRko guides to CRISPRi guides\ntargeting the same vs. different gene\nDay 14 K562")
+plt.title("Cross-modality agreement in perturbation effects\nDay 14 K562")
 plt.savefig("../figures/crossmodality_ROC_signedpvalcorrelation_d14K562.pdf",bbox_inches="tight",dpi=600)
 
 
