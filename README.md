@@ -1,6 +1,5 @@
 
-This repository hosts all code required for the analysis presented in "Direct comparison of CRISPR knockout and interference with Perturb-seq
-" [(pre-print)](https://www.biorxiv.org/content/10.64898/2026.07.04.736492v1) (Broad Institute of MIT and Harvard). 
+This repository hosts all code required for the analysis presented in "Direct comparison of CRISPR knockout and interference with Perturb-seq" [(pre-print)](https://www.biorxiv.org/content/10.64898/2026.07.04.736492v1) (Broad Institute of MIT and Harvard). 
 
 To set up this analysis, use the following commands in terminal
 
