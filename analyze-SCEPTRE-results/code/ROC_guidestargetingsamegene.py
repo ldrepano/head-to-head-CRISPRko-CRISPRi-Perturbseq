@@ -11,7 +11,6 @@ plt.rc('pdf', fonttype=42)
 
 
 #first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
-#first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
 guideref=pd.read_csv("../../reference/CRISPRko-CRISPRi-perturbseq-benchmark-guides.csv")
 guide_to_modality=guideref.set_index("guide_id_long").to_dict()["modality"]
 
@@ -42,7 +41,7 @@ day14_SCEPTRE_results_CRISPRi=pd.read_csv("../SCEPTRE-results/d14_K562_CRISPRi_S
 day14_SCEPTRE_results_CRISPRi["log(foldchange)"]=day14_SCEPTRE_results_CRISPRi["fold_change"].apply(lambda x: np.log(x+0.1))
 day14_SCEPTRE_results_CRISPRi=day14_SCEPTRE_results_CRISPRi.dropna()
 
-def get_signed_negative_log10_pval(SCEPTRE_results_df):
+def get_signed_negative_log_pval(SCEPTRE_results_df):
 	#creates a column in the supplied df called signed_logpval
 	#represents each guide/transcript pair such that magnitude indicates significance of perturbation effect relative to negative controls
 	#... and sign (negative vs positive) indicates upregulation vs downregulation
@@ -54,7 +53,7 @@ def get_signed_negative_log10_pval(SCEPTRE_results_df):
 
 #get dataframe of true positive rates, false positive rates for all signed p-value cutoffs to distinguish guides targeting same gene
 def get_tpr_fpr_df(SCEPTRE_results,day):
-	SCEPTRE_results=get_signed_negative_log10_pval(SCEPTRE_results)
+	SCEPTRE_results=get_signed_negative_log_pval(SCEPTRE_results)
 	signedlogpvals=SCEPTRE_results[["response_id","grna_id","signed_logpval"]]
 	signedlogpvals=pd.pivot_table(signedlogpvals, values="signed_logpval", index="response_id", columns=["grna_id"]).reset_index()
 	#get pearson correlation in signed pvals attached to response gene for each guide 
