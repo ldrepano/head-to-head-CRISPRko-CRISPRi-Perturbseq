@@ -19,7 +19,7 @@ guide_to_shortid=guideref.set_index("guide_id_long").to_dict()["guide_id_short"]
 
 def process_SCEPTRE_results(modality):
 	SCEPTRE_results=pd.read_csv("../SCEPTRE-results/d14_K562_"+modality+"_SCEPTRE_results.csv")
-	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log(x+0.1))
+	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log10(x+0.1))
 	SCEPTRE_results=SCEPTRE_results.dropna()
 	SCEPTRE_results["grna_id_short"]=SCEPTRE_results['grna_id'].apply(lambda x: guide_to_shortid[x])
 	SCEPTRE_results=SCEPTRE_results.sort_values(by="grna_id_short")

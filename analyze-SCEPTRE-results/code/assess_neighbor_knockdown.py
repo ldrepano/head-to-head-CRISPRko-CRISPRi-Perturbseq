@@ -26,7 +26,7 @@ guides_repeated_across_libraries=["COTL1_TACAACCTGGTGCGCGACGA","MOSMO_GGCGATGGCG
 def processdata_nonday14(sceptre_results_filepath):
 	SCEPTRE_results=pd.read_csv(sceptre_results_filepath)
 	SCEPTRE_results=SCEPTRE_results[SCEPTRE_results["grna_id"].isin(guides_repeated_across_libraries)==False]
-	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log(x+0.1))
+	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log10(x+0.1))
 	SCEPTRE_results=SCEPTRE_results.dropna()
 	SCEPTRE_results["grna_id_short"]=SCEPTRE_results['grna_id'].apply(lambda x: guide_to_shortid[x])
 	SCEPTRE_results=SCEPTRE_results.sort_values(by="grna_id_short")

@@ -21,7 +21,7 @@ guides_repeated_across_libraries=["COTL1_TACAACCTGGTGCGCGACGA","MOSMO_GGCGATGGCG
 def processdata_nonday14(sceptre_results_filepath):
 	SCEPTRE_results=pd.read_csv(sceptre_results_filepath)
 	SCEPTRE_results=SCEPTRE_results[SCEPTRE_results["grna_id"].isin(guides_repeated_across_libraries)==False]
-	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log(x+0.1))
+	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log10(x+0.1))
 	SCEPTRE_results=SCEPTRE_results.dropna()
 	SCEPTRE_results["modality"]=SCEPTRE_results['grna_id'].apply(lambda x: guide_to_modality[x])
 	SCEPTRE_results_CRISPRko=SCEPTRE_results[SCEPTRE_results["modality"]=="CRISPRko"]
@@ -34,11 +34,11 @@ day10_SCEPTRE_results_CRISPRko,day10_SCEPTRE_results_CRISPRi=processdata_nonday1
 
 
 day14_SCEPTRE_results_CRISPRko=pd.read_csv("../SCEPTRE-results/d14_K562_CRISPRko_SCEPTRE_results.csv")
-day14_SCEPTRE_results_CRISPRko["log(foldchange)"]=day14_SCEPTRE_results_CRISPRko["fold_change"].apply(lambda x: np.log(x+0.1))
+day14_SCEPTRE_results_CRISPRko["log(foldchange)"]=day14_SCEPTRE_results_CRISPRko["fold_change"].apply(lambda x: np.log10(x+0.1))
 day14_SCEPTRE_results_CRISPRko=day14_SCEPTRE_results_CRISPRko.dropna()
 
 day14_SCEPTRE_results_CRISPRi=pd.read_csv("../SCEPTRE-results/d14_K562_CRISPRi_SCEPTRE_results.csv")
-day14_SCEPTRE_results_CRISPRi["log(foldchange)"]=day14_SCEPTRE_results_CRISPRi["fold_change"].apply(lambda x: np.log(x+0.1))
+day14_SCEPTRE_results_CRISPRi["log(foldchange)"]=day14_SCEPTRE_results_CRISPRi["fold_change"].apply(lambda x: np.log10(x+0.1))
 day14_SCEPTRE_results_CRISPRi=day14_SCEPTRE_results_CRISPRi.dropna()
 
 def get_signed_negative_log_pval(SCEPTRE_results_df):
@@ -46,7 +46,7 @@ def get_signed_negative_log_pval(SCEPTRE_results_df):
 	#represents each guide/transcript pair such that magnitude indicates significance of perturbation effect relative to negative controls
 	#... and sign (negative vs positive) indicates upregulation vs downregulation
 	SCEPTRE_results_df["effect_sign"]=SCEPTRE_results_df["fold_change"].apply(lambda x: -1 if x<1 else 1)
-	SCEPTRE_results_df["-logpval"]=-np.log(SCEPTRE_results_df["p_value"])
+	SCEPTRE_results_df["-logpval"]=-np.log10(SCEPTRE_results_df["p_value"])
 	SCEPTRE_results_df["signed_logpval"]=SCEPTRE_results_df["effect_sign"]*SCEPTRE_results_df["-logpval"]
 	SCEPTRE_results_df=SCEPTRE_results_df.drop(["effect_sign","-logpval"],axis=1)
 	return SCEPTRE_results_df

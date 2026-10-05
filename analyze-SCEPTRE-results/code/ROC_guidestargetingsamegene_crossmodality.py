@@ -20,7 +20,7 @@ promiscuous_CRISPRi_guides=[short_to_long_id[guide] for guide in promiscuous_CRI
 
 def processdata(sceptre_results_filepath):
 	SCEPTRE_results=pd.read_csv(sceptre_results_filepath)
-	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log(x+0.1))
+	SCEPTRE_results["log(foldchange)"]=SCEPTRE_results["fold_change"].apply(lambda x: np.log10(x+0.1))
 	SCEPTRE_results=SCEPTRE_results.dropna()
 	return SCEPTRE_results
 
@@ -37,7 +37,7 @@ def get_signed_negative_log_pval(SCEPTRE_results_df):
 	#represents each guide/transcript pair such that magnitude indicates significance of perturbation effect relative to negative controls
 	#... and sign (negative vs positive) indicates upregulation vs downregulation
 	SCEPTRE_results_df["effect_sign"]=SCEPTRE_results_df["fold_change"].apply(lambda x: -1 if x<1 else 1)
-	SCEPTRE_results_df["-logpval"]=-np.log(SCEPTRE_results_df["p_value"])
+	SCEPTRE_results_df["-logpval"]=-np.log10(SCEPTRE_results_df["p_value"])
 	SCEPTRE_results_df["signed_logpval"]=SCEPTRE_results_df["effect_sign"]*SCEPTRE_results_df["-logpval"]
 	SCEPTRE_results_df=SCEPTRE_results_df.drop(["effect_sign","-logpval"],axis=1)
 	return SCEPTRE_results_df
