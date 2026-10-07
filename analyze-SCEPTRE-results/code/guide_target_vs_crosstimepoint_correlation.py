@@ -32,7 +32,7 @@ def processdata(sceptre_results_filepath):
 	#represents each guide/transcript pair such that magnitude indicates significance of perturbation effect relative to negative controls
 	#... and sign (negative vs positive) indicates upregulation vs downregulation
 	SCEPTRE_results["effect_sign"]=SCEPTRE_results["fold_change"].apply(lambda x: -1 if x<1 else 1)
-	SCEPTRE_results["-logpval"]=-np.log(SCEPTRE_results["p_value"])
+	SCEPTRE_results["-logpval"]=-np.log10(SCEPTRE_results["p_value"])
 	SCEPTRE_results["signed_logpval"]=SCEPTRE_results["effect_sign"]*SCEPTRE_results["-logpval"]
 	SCEPTRE_results=SCEPTRE_results.drop(["effect_sign","-logpval"],axis=1)
 
