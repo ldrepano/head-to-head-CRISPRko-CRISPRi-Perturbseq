@@ -44,9 +44,9 @@ ax[0].set_xlabel("")
 ax[0].set_ylabel("log(fold change + 1)")
 ax[0].set_title("Day 14 CRISPRko")
 SCEPTRE_results_CRISPRko_target_notsig=SCEPTRE_results_CRISPRko_target[SCEPTRE_results_CRISPRko_target["significant"]==False]
-ax[0].scatter(SCEPTRE_results_CRISPRko_target_notsig.index,SCEPTRE_results_CRISPRko_target_notsig["log(foldchange)"],label="Target transcript",color="blue",s=30)
+ax[0].scatter(SCEPTRE_results_CRISPRko_target_notsig.index,SCEPTRE_results_CRISPRko_target_notsig["log(foldchange)"],label="Target transcript",color="blue",s=15)
 SCEPTRE_results_CRISPRko_target_sig=SCEPTRE_results_CRISPRko_target[SCEPTRE_results_CRISPRko_target["significant"]]
-ax[0].scatter(SCEPTRE_results_CRISPRko_target_sig.index,SCEPTRE_results_CRISPRko_target_sig["log(foldchange)"],label="Target transcript",color="blue",s=95,marker='*')
+ax[0].scatter(SCEPTRE_results_CRISPRko_target_sig.index,SCEPTRE_results_CRISPRko_target_sig["log(foldchange)"],label="Target transcript",color="blue",s=45,marker='*')
 
 sns.violinplot(data=SCEPTRE_results_CRISPRi,x="grna_id_short",y="log(foldchange)",inner=None,color="lightgrey",ax=ax[1])
 ax[1].tick_params(axis='x', rotation=90)
@@ -55,9 +55,9 @@ ax[1].set_xlabel("")
 ax[1].set_ylabel("log(fold change + 1)")
 ax[1].set_title("Day 14 CRISPRi")
 SCEPTRE_results_CRISPRi_target_notsig=SCEPTRE_results_CRISPRi_target[SCEPTRE_results_CRISPRi_target["significant"]==False]
-ax[1].scatter(SCEPTRE_results_CRISPRi_target_notsig.index,SCEPTRE_results_CRISPRi_target_notsig["log(foldchange)"],label="Target transcript",color="blue",s=30)
+ax[1].scatter(SCEPTRE_results_CRISPRi_target_notsig.index,SCEPTRE_results_CRISPRi_target_notsig["log(foldchange)"],label="Target transcript",color="blue",s=15)
 SCEPTRE_results_CRISPRi_target_sig=SCEPTRE_results_CRISPRi_target[SCEPTRE_results_CRISPRi_target["significant"]]
-ax[1].scatter(SCEPTRE_results_CRISPRi_target_sig.index,SCEPTRE_results_CRISPRi_target_sig["log(foldchange)"],label="Target transcript",color="blue",s=95,marker='*')
+ax[1].scatter(SCEPTRE_results_CRISPRi_target_sig.index,SCEPTRE_results_CRISPRi_target_sig["log(foldchange)"],label="Target transcript",color="blue",s=45,marker='*')
 
 fig.suptitle("Perturbation effect on all qc-passing transcripts, target in blue")
 
