@@ -11,7 +11,7 @@ warnings.simplefilter(action='ignore', category=Warning)
 plt.rc('pdf', fonttype=42)
 
 def process_Yao_SCEPTRE_results(modality):
-    SCEPTRE_results = pd.read_csv(f"../SCEPTRE-results/{modality}_Yao_SCEPTRE_results.csv")
+    SCEPTRE_results = pd.read_csv(f"../SCEPTRE-results/{modality}_Yao_SCEPTRE_results_v2.csv")
     SCEPTRE_results["log(foldchange)"] = np.log10(SCEPTRE_results["fold_change"] + 0.1)
     SCEPTRE_results=SCEPTRE_results.dropna()
     SCEPTRE_results=SCEPTRE_results.sort_values(by="grna_id")
@@ -28,7 +28,7 @@ Yao_SCEPTRE_results_CRISPRko,Yao_SCEPTRE_results_CRISPRko_target=process_Yao_SCE
 Yao_SCEPTRE_results_CRISPRi,Yao_SCEPTRE_results_CRISPRi_target=process_Yao_SCEPTRE_results("CRISPRi")
 
 yao_combined = pd.concat([Yao_SCEPTRE_results_CRISPRko, Yao_SCEPTRE_results_CRISPRi], ignore_index=True)
-yao_combined['ptl'] = yao_combined.groupby(['modality', 'grna_id'])['log(foldchange)'].rank(pct=True)
+yao_combined['ptl'] = yao_combined.groupby(['modality', 'grna_id'])['log(foldchange)'].rank(method='min',pct=True)
 
 # Filter down to only the target transcripts 
 yao_target_combined = yao_combined[yao_combined["response_id"] == yao_combined["grna_target"]].copy()
@@ -58,7 +58,7 @@ day10_SCEPTRE_results_CRISPRko,day10_SCEPTRE_results_CRISPRi=processdata_nonday1
 
 # Calculate percentile rank of the fold change for each guide
 day10_combined = pd.concat([day10_SCEPTRE_results_CRISPRko,day10_SCEPTRE_results_CRISPRi], ignore_index = True)
-day10_combined['ptl'] = day10_combined.groupby(['modality', 'grna_id'])['log(foldchange)'].rank(pct=True)
+day10_combined['ptl'] = day10_combined.groupby(['modality', 'grna_id'])['log(foldchange)'].rank(method='min',pct=True)
 
 # Filter down to only the target transcripts 
 target_day10_combined = day10_combined[day10_combined["response_id"] == day10_combined["grna_target"]].copy()
@@ -133,5 +133,19 @@ ax_b.set_ylabel("% guides with target knockdown")
 ax_b.set_title("Target knockdown rate (FDR < 0.1)")
 ax_b.legend(loc="upper right")
 
-plt.savefig("../figures/target_knockdown_rate.pdf",bbox_inches="tight",dpi=600)
+plt.savefig("../figures/yao_target_knockdown_rate.pdf",bbox_inches="tight",dpi=600)
 plt.show()
+
+for modality, group in yao_target_combined.groupby('modality'):
+    # Find guides where target percentile is <= 20
+    under_20 = group[group['ptl_100'] <= 20]
+    if not under_20.empty:
+        y_val = under_20['cum_ptl_ptl'].max()
+        print(f"Yao - Modality: {modality} | At x = 20, fraction of guides (y) = {y_val:.4f} ({y_val*100:.1f}%)")
+
+for modality, group in target_day10_combined.groupby('modality'):
+    # Find guides where target percentile is <= 20
+    under_20 = group[group['ptl_100'] <= 20]
+    if not under_20.empty:
+        y_val = under_20['cum_ptl_ptl'].max()
+        print(f"This study Day 10 - Modality: {modality} | At x = 20, fraction of guides (y) = {y_val:.4f} ({y_val*100:.1f}%)")

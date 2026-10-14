@@ -41,7 +41,7 @@ sns.violinplot(data=SCEPTRE_results_CRISPRko,x="grna_id_short",y="log(foldchange
 ax[0].tick_params(axis='x', rotation=90)
 ax[0].margins(x=0.01)
 ax[0].set_xlabel("")
-ax[0].set_ylabel("log(fold change + 1)")
+ax[0].set_ylabel("log(fold change + 0.1)")
 ax[0].set_title("Day 14 CRISPRko")
 SCEPTRE_results_CRISPRko_target_notsig=SCEPTRE_results_CRISPRko_target[SCEPTRE_results_CRISPRko_target["significant"]==False]
 ax[0].scatter(SCEPTRE_results_CRISPRko_target_notsig.index,SCEPTRE_results_CRISPRko_target_notsig["log(foldchange)"],label="Target transcript",color="blue",s=15)
@@ -52,7 +52,7 @@ sns.violinplot(data=SCEPTRE_results_CRISPRi,x="grna_id_short",y="log(foldchange)
 ax[1].tick_params(axis='x', rotation=90)
 ax[1].margins(x=0.01)
 ax[1].set_xlabel("")
-ax[1].set_ylabel("log(fold change + 1)")
+ax[1].set_ylabel("log(fold change + 0.1)")
 ax[1].set_title("Day 14 CRISPRi")
 SCEPTRE_results_CRISPRi_target_notsig=SCEPTRE_results_CRISPRi_target[SCEPTRE_results_CRISPRi_target["significant"]==False]
 ax[1].scatter(SCEPTRE_results_CRISPRi_target_notsig.index,SCEPTRE_results_CRISPRi_target_notsig["log(foldchange)"],label="Target transcript",color="blue",s=15)

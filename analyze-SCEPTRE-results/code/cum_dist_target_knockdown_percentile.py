@@ -65,7 +65,7 @@ CRISPRi_combined = pd.concat([day4_SCEPTRE_results_CRISPRi,day7_SCEPTRE_results_
 modalities_combined = pd.concat([CRISPRi_combined, CRISPRko_combined], ignore_index=True)
 
 #calculate percentile rank of the fold change for each guide
-modalities_combined['ptl'] = modalities_combined.groupby(['modality', 'grna_id', 'Day'])['log(foldchange)'].rank(pct=True)
+modalities_combined['ptl'] = modalities_combined.groupby(['modality', 'grna_id', 'Day'])['log(foldchange)'].rank(method='min',pct=True)
 
 #filter down to only the target transcripts 
 target_modalities_combined = modalities_combined[modalities_combined["response_id"] == modalities_combined["grna_target"]].copy()
