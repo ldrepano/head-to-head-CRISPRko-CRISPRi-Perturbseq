@@ -214,3 +214,63 @@ plt.title("Sequence composition of CRISPRi guides")
 plt.savefig("../figures/CRISPRi_offtargetactivity_vsGGabundance.pdf",bbox_inches="tight",dpi=600)
 
 
+def get_CRISPRi_target_kd_per_guide(sample):
+    #get SCEPTRE results
+    SCEPTRE_results=pd.read_csv("../SCEPTRE-results/"+sample+"_SCEPTRE_results.csv")
+    SCEPTRE_results=SCEPTRE_results[SCEPTRE_results["grna_id"].isin(guides_repeated_across_libraries)==False]
+    SCEPTRE_results=SCEPTRE_results.dropna()
+    SCEPTRE_results['sample'] = sample
+    
+    #add modality label, subset to CRISPRi
+    SCEPTRE_results["modality"]=SCEPTRE_results['grna_id'].apply(lambda x: guide_to_modality[x])
+    SCEPTRE_results_CRISPRi=SCEPTRE_results[SCEPTRE_results["modality"]=="CRISPRi"]
+    
+    #get target lfc and pvalue
+    SCEPTRE_results_CRISPRi["log(foldchange)"]=SCEPTRE_results_CRISPRi["fold_change"].apply(lambda x: np.log10(x+0.1))
+    SCEPTRE_target_results_CRISPRi = SCEPTRE_results_CRISPRi[SCEPTRE_results_CRISPRi['response_id']==SCEPTRE_results_CRISPRi['grna_target']][['grna_id',
+                                                                                                                                              'grna_target',
+                                                                                                                                              'log(foldchange)',
+                                                                                                                                              'sample']].drop_duplicates()
+    return SCEPTRE_target_results_CRISPRi
+
+samplenames = ["d7_K562","d10_K562"]
+CRISPRi_target_kd_df = pd.concat([get_CRISPRi_target_kd_per_guide(samplename) for samplename in samplenames]).reset_index(drop=True)
+CRISPRi_target_kd_df["guide_id"]=CRISPRi_target_kd_df["grna_id"].apply(lambda x: guide_to_shortid[x])
+
+CRISPRi_target_kd_with_correlations = CRISPRi_target_kd_df.merge(CRISPRidata_withresiduals,left_on='grna_id',right_on='other_grna_id')
+promiscuous_CRISPRi_labels=["STK24_3","SH3KBP1_4","PYGB_2","IFT25_3","AKT2_2", "TMSB10_1","PDHA1_3"]
+promiscuous_guide_targets=[guide.split("_")[0] for guide in promiscuous_CRISPRi_labels]
+promiscuous_guide_targets=sorted(promiscuous_guide_targets)
+
+plot_df = CRISPRi_target_kd_with_correlations.groupby(['guide_id','grna_target','residual'])['log(foldchange)'].mean().reset_index()
+
+(fig,ax)=plt.subplots(2,
+                      4,
+                      figsize=(12,6),
+                      layout="constrained")
+
+for n,gene in enumerate(promiscuous_guide_targets):
+    i=min(int(n/3),1)
+    if i==0:
+        j=n%3+1
+    else:
+        j=n-3
+    df = plot_df[(plot_df['grna_target']==gene)]
+    sns.scatterplot(ax=ax[i,j],
+                    data=df[df['guide_id'].isin(promiscuous_CRISPRi_labels)==False],
+                    x='log(foldchange)',y='residual',color='black',s=100)
+    sns.scatterplot(ax=ax[i,j],
+                    data=df[df['guide_id'].isin(promiscuous_CRISPRi_labels)],
+                    x='log(foldchange)',y='residual',color='blue',marker="*",s=400)
+    ax[i,j].set_title(gene,fontsize=16)
+    ax[i,j].set_xlabel('')
+    if j==0 or (i==0 and j==1):
+        ax[i,j].set_ylabel('Off-target score',fontsize=16)
+    else:
+        ax[i,j].set_ylabel('')
+    ax[i,j].tick_params(axis="both", labelsize=12)
+
+ax[0, 0].set_visible(False)
+fig.supxlabel('Target LFC (average across Day 7 and Day 10)',fontsize=16)
+
+plt.savefig("../figures/target_lfc_per_guide_per_target_with_promiscuous_guide_vs_offtarget_score.pdf",bbox_inches="tight",dpi=600)
