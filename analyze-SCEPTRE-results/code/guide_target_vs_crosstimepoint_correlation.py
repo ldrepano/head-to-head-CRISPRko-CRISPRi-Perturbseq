@@ -227,10 +227,8 @@ def get_CRISPRi_target_kd_per_guide(sample):
     
     #get target lfc and pvalue
     SCEPTRE_results_CRISPRi["log(foldchange)"]=SCEPTRE_results_CRISPRi["fold_change"].apply(lambda x: np.log10(x+0.1))
-    SCEPTRE_target_results_CRISPRi = SCEPTRE_results_CRISPRi[SCEPTRE_results_CRISPRi['response_id']==SCEPTRE_results_CRISPRi['grna_target']][['grna_id',
-                                                                                                                                              'grna_target',
-                                                                                                                                              'log(foldchange)',
-                                                                                                                                              'sample']].drop_duplicates()
+    SCEPTRE_target_results_CRISPRi = SCEPTRE_results_CRISPRi[SCEPTRE_results_CRISPRi['response_id']==SCEPTRE_results_CRISPRi['grna_target']]
+    SCEPTRE_target_results_CRISPRi=SCEPTRE_target_results_CRISPRi[['grna_id','grna_target','log(foldchange)','sample']].drop_duplicates()
     return SCEPTRE_target_results_CRISPRi
 
 samplenames = ["d7_K562","d10_K562"]
