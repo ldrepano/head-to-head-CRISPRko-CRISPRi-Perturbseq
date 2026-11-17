@@ -5,15 +5,16 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import FormatStrFormatter
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 plt.rc('pdf', fonttype=42)
 
-P_FLOOR = 1e-300
 
 #percentile of each transcript within its guide group: primary key = signed p-value score, tie-break = fold change
 def add_signed_pval_ptl(df, grp):
-    logp = np.log10(df['p_value'].clip(lower=P_FLOOR))
+    logp = np.log10(df['p_value'])
     df['rank_score'] = np.where(df['fold_change'] < 1, logp, -logp)
     r_score = df.groupby(grp)['rank_score'].rank(method='dense')
     r_fc = df.groupby(grp)['fold_change'].rank(method='dense')
@@ -104,12 +105,18 @@ for modality in ["CRISPRko", "CRISPRi"]:
         continue
     x, y = ecdf_xy(vals)
     ax.plot(x, y, drawstyle='steps-post', color=modality_colors[modality], label=modality)
-ax.axvline(x=20, color='red', linestyle='--')
-ax.set_xlabel("Target percentile by signed p-value\n(relative to other transcripts, same guide)")
+# ax.axvline(x=20, color='red', linestyle='--')
+# ax.axvline(x=1, color='red', linestyle='--')
+# ax.set_xlabel("Target percentile by signed p-value\n(relative to other transcripts, same guide)")
+ax.set_xlabel("Log-scaled target percentile by signed p-value\n(relative to other transcripts, same guide)")
 ax.set_ylabel("Fraction of guides at or below")
+ax.set(xscale="log")
 ax.set_xlim(0, 100)
 ax.set_ylim(0, 1.02)
-ax.legend(loc="lower right")
+formatter = ScalarFormatter()
+formatter.set_scientific(False)
+ax.xaxis.set_major_formatter(FormatStrFormatter('%g'))
+ax.legend(loc="upper left")
 sns.despine()
 ax.set_title("Yao et al.")
 fig.savefig("../figures/yao_pval_cum_dist_target_percentile_ecdf.pdf", bbox_inches="tight", dpi=600)
@@ -119,6 +126,12 @@ datasets = ["This study, Day 10 K562", "Yao et al."]
 
 ko_pcts = [day10_CRISPRko_pct, Yao_CRISPRko_pct]
 i_pcts = [day10_CRISPRi_pct, Yao_CRISPRi_pct]
+
+# datasets = ["Yao et al."]
+
+# ko_pcts = [Yao_CRISPRko_pct]
+# i_pcts = [Yao_CRISPRi_pct]
+
 
 x = np.arange(len(datasets))
 width = 0.35
@@ -149,9 +162,16 @@ ax_b.legend(loc="upper right")
 plt.savefig("../figures/yao_target_knockdown_rate.pdf",bbox_inches="tight",dpi=600)
 plt.show()
 
-#fraction of guides with target percentile <= 20 (the red line)
+#fraction of guides with target percentile <= 20
 for label, df in [("Yao", yao_target_combined), ("This study Day 10", target_day10_combined)]:
     for modality, group in df.groupby('modality'):
         n_top20 = int((group['ptl_100'] <= 20).sum())
         frac = n_top20 / len(group)
         print(f"{label} - Modality: {modality} | target percentile <= 20: {n_top20}/{len(group)} guides ({frac*100:.1f}%)")
+
+#fraction of guides with target percentile <= 5
+for label, df in [("Yao", yao_target_combined), ("This study Day 10", target_day10_combined)]:
+    for modality, group in df.groupby('modality'):
+        n_top5 = int((group['ptl_100'] <= 5).sum())
+        frac = n_top5 / len(group)
+        print(f"{label} - Modality: {modality} | target percentile <= 5: {n_top5}/{len(group)} guides ({frac*100:.1f}%)")
