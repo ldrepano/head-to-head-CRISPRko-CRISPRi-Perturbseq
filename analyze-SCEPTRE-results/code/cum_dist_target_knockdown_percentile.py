@@ -6,11 +6,12 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import FormatStrFormatter
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 plt.rc('pdf', fonttype=42)
 
-P_FLOOR = 1e-300          #avoid log10(0) if any p-values are reported as exactly 0
 
 #first read in reference such that CRISPRko vs CRISPRi guides can be distinguished
 guideref=pd.read_csv("../../reference/CRISPRko-CRISPRi-perturbseq-benchmark-guides.csv")
@@ -66,7 +67,7 @@ CRISPRi_combined = pd.concat([day4_SCEPTRE_results_CRISPRi,day7_SCEPTRE_results_
 modalities_combined = pd.concat([CRISPRi_combined, CRISPRko_combined], ignore_index=True)
 
 # lower ranking = stronger evidence of knockdown 
-logp = np.log10(modalities_combined['p_value'].clip(lower=P_FLOOR))
+logp = np.log10(modalities_combined['p_value'])
 modalities_combined['rank_score'] = np.where(modalities_combined['fold_change'] < 1, logp, -logp)
 
 #percentile rank of the target within each guide: primary key = rank_score, tie-break = fold change
@@ -135,9 +136,15 @@ def plot_cum_dist(df, color, title, outpath):
                  estimator=None, sort=False,      #no averaging of ties, keep ECDF order
                  drawstyle='steps-post',          #step function
                  color=color, ax=ax)
-    ax.axvline(x=20, color='red', linestyle='--')
-    ax.set_xlabel("Target percentile by signed p-value\n(relative to other transcripts, same guide)")
+    # ax.axvline(x=1, color='red', linestyle='--')
+    # ax.axvline(x=95, color='red', linestyle='--')
+    # ax.set_xlabel("Target percentile by signed p-value\n(relative to other transcripts, same guide)")
+    ax.set_xlabel("Log-scaled target percentile by signed p-value\n(relative to other transcripts, same guide)")
     ax.set_ylabel("Fraction of guides at or below")
+    ax.set(xscale="log")
+    formatter = ScalarFormatter()
+    formatter.set_scientific(False)
+    ax.xaxis.set_major_formatter(FormatStrFormatter('%g'))
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 1.02)
     ax.legend(loc="lower right", title="Day")
@@ -151,9 +158,9 @@ plot_cum_dist(target_modalities_combined_plot.loc[target_modalities_combined_plo
 plot_cum_dist(target_modalities_combined_plot.loc[target_modalities_combined_plot['modality']=="CRISPRi"],
               "limegreen", "CRISPRi", "../figures/pval_CRISPRi_cum_dist_target_percentile_ecdf.pdf")
 
-#fraction of guides with target in bottom 20% (the red line), for reference
-print("\nFraction of guides with target percentile <= 20:")
-print(target_modalities_combined.groupby(['modality', 'Day'])['ptl_100'].apply(lambda s: (s <= 20).mean()))
+#fraction of guides with target in bottom 5% (the red line), for reference
+print("\nFraction of guides with target percentile <= 5:")
+print(target_modalities_combined.groupby(['modality', 'Day'])['ptl_100'].apply(lambda s: (s <= 5).mean()))
 
 #sanity check: best-ranked CRISPRi Day 7 targets
 d7i = target_modalities_combined.query("modality=='CRISPRi' and Day=='7'").sort_values('ptl_100')
