@@ -63,6 +63,6 @@ gse_k562_res<-dplyr::rename(gse_k562@result,NES_K562=NES,FDR_K562=p.adjust)
 gse_a549_res<-dplyr::rename(gse_a549@result,NES_A549=NES,FDR_A549=p.adjust)
 
 gse_res_merged<-inner_join(gse_k562_res,gse_a549_res,by=c('ID','Description'))
-write.table(gse_res_merged,file="CRISPRko_vs_CRISPRi_global/DESeq2_GSEA_KEGG_Day7_merged_with_filtering.txt",
+write.table(gse_res_merged,file="CRISPRko_vs_CRISPRi_global/DESeq2_GSEA_Day7_CellLinesMerged.txt",
             sep = "\t", row.names = FALSE)
 
