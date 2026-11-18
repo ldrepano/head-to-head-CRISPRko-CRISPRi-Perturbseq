@@ -126,16 +126,16 @@ get_towardstelomere_enrichment_percell<-function(sample){
   return(enrichment_df)
 }
   
-d4_enrichmentdf<-get_towardstelomere_enrichment_percell("4")
-d7_enrichmentdf<-get_towardstelomere_enrichment_percell("7")
-d10_enrichmentdf<-get_towardstelomere_enrichment_percell("10")
-d14_enrichmentdf<-get_towardstelomere_enrichment_percell("14")
+#d4_enrichmentdf<-get_towardstelomere_enrichment_percell("4")
+#d7_enrichmentdf<-get_towardstelomere_enrichment_percell("7")
+#d10_enrichmentdf<-get_towardstelomere_enrichment_percell("10")
+#d14_enrichmentdf<-get_towardstelomere_enrichment_percell("14")
 
 #save results since get_towardstelomere_enrichment_percell takes a long time to run
-write.csv(d4_enrichmentdf, "TowardsTelomereEnrichment/d4_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
-write.csv(d7_enrichmentdf, "TowardsTelomereEnrichment/d7_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
-write.csv(d10_enrichmentdf, "TowardsTelomereEnrichment/d10_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
-write.csv(d14_enrichmentdf, "TowardsTelomereEnrichment/d14_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
+#write.csv(d4_enrichmentdf, "TowardsTelomereEnrichment/d4_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
+#write.csv(d7_enrichmentdf, "TowardsTelomereEnrichment/d7_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
+#write.csv(d10_enrichmentdf, "TowardsTelomereEnrichment/d10_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
+#write.csv(d14_enrichmentdf, "TowardsTelomereEnrichment/d14_enrichmentofgenestowardstelomere.csv", row.names = FALSE)
 
 #(reload in if needed)
 d4_enrichmentdf<-read.csv("TowardsTelomereEnrichment/d4_enrichmentofgenestowardstelomere.csv")
@@ -158,7 +158,7 @@ get_enrichment_zscore<-function(df){
     negcon_enrichment_mean<-mean(targetsubset_negcons$Enrichment)
     negcon_enrichment_sd<-sd(targetsubset_negcons$Enrichment)
     negcon_means<-c(negcon_means,negcon_enrichment_mean)
-    negcon_sds<-c(negcon_means,negcon_enrichment_mean)
+    negcon_sds<-c(negcon_sds,negcon_enrichment_sd)
     
     bottom5thpercentile<-quantile(targetsubset_negcons$Enrichment, probs = 0.05)
     
@@ -203,6 +203,7 @@ ggplot(data=AKT2_towardstelomere_genes,aes(x=zscore,color=modality))+
   labs(x="Transcript abundance towards telomere\nZ-scored to negative control cells",
        y="Density",title="Day 4 arm loss in cells with AKT2-targeting guides")
 ggsave("Figures/ArmEffects/percent_cells_with_loss_towards_telomere_AKT2_day4.png",width=6,height=3)
+ggsave("Figures/ArmEffects/percent_cells_with_loss_towards_telomere_AKT2_day4.pdf",width=6,height=3)
 
 
 get_percent_loss<-function(enrichment_df,sample){
@@ -274,5 +275,4 @@ ggplot(alldays_lossrate,aes(Day, percent_below,dodge=modality))+
   coord_cartesian(ylim = c(0,28))
 ggsave("Figures/ArmEffects/percent_cells_with_loss_towards_telomere.png",width=8,height=5)
 
-mean(d4_lossrate_CRISPRko$percent_below) 
-
+mean(d4_lossrate_CRISPRko$percent_below)
