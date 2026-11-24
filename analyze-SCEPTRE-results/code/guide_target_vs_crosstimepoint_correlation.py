@@ -5,11 +5,8 @@ import pandas as pd
 import seaborn as sns 
 import numpy as np 
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
-from sklearn.linear_model import LinearRegression
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
-from adjustText import adjust_text
 plt.rc('pdf', fonttype=42)
 
 color_dictionary={"CRISPRko": 'dodgerblue', "CRISPRi": 'limegreen'}
@@ -186,10 +183,11 @@ d7_v_10_correlations_withresiduals=get_scatterplot_with_outliers(d7_v_10_correla
 #examine association between putative off-target activity and abundance of GGs in seed 
 d7_v_10_correlations_withresiduals["seed"]=d7_v_10_correlations_withresiduals["other_grna_id"].apply(lambda x: x[-12:])
 d7_v_10_correlations_withresiduals["num_GG_in_seed"]=d7_v_10_correlations_withresiduals["seed"].apply(lambda x: x.count("GG"))
-
 CRISPRidata_withresiduals=d7_v_10_correlations_withresiduals[d7_v_10_correlations_withresiduals["modality"]=="CRISPRi"]
 
 plt.figure(figsize=(5,5))
+
+    
 plt.scatter(data=CRISPRidata_withresiduals[CRISPRidata_withresiduals["num_GG_in_seed"]==0],
 	x="median_corr",y="guide_crosstime_corr",
 	c="white",edgecolors='lightgrey', linewidths=0.5,
@@ -214,25 +212,11 @@ plt.title("Sequence composition of CRISPRi guides")
 plt.savefig("../figures/CRISPRi_offtargetactivity_vsGGabundance.pdf",bbox_inches="tight",dpi=600)
 
 
-def get_CRISPRi_target_kd_per_guide(sample):
-    #get SCEPTRE results
-    SCEPTRE_results=pd.read_csv("../SCEPTRE-results/"+sample+"_SCEPTRE_results.csv")
-    SCEPTRE_results=SCEPTRE_results[SCEPTRE_results["grna_id"].isin(guides_repeated_across_libraries)==False]
-    SCEPTRE_results=SCEPTRE_results.dropna()
-    SCEPTRE_results['sample'] = sample
-    
-    #add modality label, subset to CRISPRi
-    SCEPTRE_results["modality"]=SCEPTRE_results['grna_id'].apply(lambda x: guide_to_modality[x])
-    SCEPTRE_results_CRISPRi=SCEPTRE_results[SCEPTRE_results["modality"]=="CRISPRi"]
-    
-    #get target lfc and pvalue
-    SCEPTRE_results_CRISPRi["log(foldchange)"]=SCEPTRE_results_CRISPRi["fold_change"].apply(lambda x: np.log10(x+0.1))
-    SCEPTRE_target_results_CRISPRi = SCEPTRE_results_CRISPRi[SCEPTRE_results_CRISPRi['response_id']==SCEPTRE_results_CRISPRi['grna_target']]
-    SCEPTRE_target_results_CRISPRi=SCEPTRE_target_results_CRISPRi[['grna_id','grna_target','log(foldchange)','sample']].drop_duplicates()
-    return SCEPTRE_target_results_CRISPRi
-
+#examine target knockdown of promiscuous guides relative to others with same target
+target_kd_df=pd.read_csv('../SCEPTRE-results/target_SCEPTRE_results.csv')
 samplenames = ["d7_K562","d10_K562"]
-CRISPRi_target_kd_df = pd.concat([get_CRISPRi_target_kd_per_guide(samplename) for samplename in samplenames]).reset_index(drop=True)
+target_kd_df=target_kd_df[target_kd_df['sample'].isin(samplenames)]
+CRISPRi_target_kd_df=target_kd_df[target_kd_df['modality']=='CRISPRi'].copy()
 CRISPRi_target_kd_df["guide_id"]=CRISPRi_target_kd_df["grna_id"].apply(lambda x: guide_to_shortid[x])
 
 CRISPRi_target_kd_with_correlations = CRISPRi_target_kd_df.merge(CRISPRidata_withresiduals,left_on='grna_id',right_on='other_grna_id')
@@ -247,6 +231,7 @@ plot_df = CRISPRi_target_kd_with_correlations.groupby(['guide_id','grna_target',
                       figsize=(12,6),
                       layout="constrained")
 
+
 for n,gene in enumerate(promiscuous_guide_targets):
     i=min(int(n/3),1)
     if i==0:
@@ -256,10 +241,10 @@ for n,gene in enumerate(promiscuous_guide_targets):
     df = plot_df[(plot_df['grna_target']==gene)]
     sns.scatterplot(ax=ax[i,j],
                     data=df[df['guide_id'].isin(promiscuous_CRISPRi_labels)==False],
-                    x='log(foldchange)',y='residual',color='black',s=100)
+                    x='log(foldchange)',y='residual',color='black',s=200)
     sns.scatterplot(ax=ax[i,j],
                     data=df[df['guide_id'].isin(promiscuous_CRISPRi_labels)],
-                    x='log(foldchange)',y='residual',color='blue',marker="*",s=400)
+                    x='log(foldchange)',y='residual',color='blue',marker="*",s=800)
     ax[i,j].set_title(gene,fontsize=16)
     ax[i,j].set_xlabel('')
     if j==0 or (i==0 and j==1):
@@ -272,3 +257,70 @@ ax[0, 0].set_visible(False)
 fig.supxlabel('Target LFC (average across Day 7 and Day 10)',fontsize=16)
 
 plt.savefig("../figures/target_lfc_per_guide_per_target_with_promiscuous_guide_vs_offtarget_score.pdf",bbox_inches="tight",dpi=600)
+
+#examine concordance of CRISPRi guides with CRISPRko guides targeting the same gene
+def processdata_for_crossmodality_comparison(sceptre_results_filepath):
+    SCEPTRE_results=pd.read_csv(sceptre_results_filepath)
+    SCEPTRE_results=SCEPTRE_results[SCEPTRE_results["grna_id"].isin(guides_repeated_across_libraries)==False]
+    SCEPTRE_results=SCEPTRE_results.dropna()
+    SCEPTRE_results["modality"]=SCEPTRE_results['grna_id'].apply(lambda x: guide_to_modality[x])
+    return SCEPTRE_results
+
+def get_signed_negative_log_pval(SCEPTRE_results_df):
+    #creates a column in the supplied df called signed_logpval
+    #represents each guide/transcript pair such that magnitude indicates significance of perturbation effect relative to negative controls
+    #... and sign (negative vs positive) indicates upregulation vs downregulation
+    SCEPTRE_results_df["effect_sign"]=SCEPTRE_results_df["fold_change"].apply(lambda x: -1 if x<1 else 1)
+    SCEPTRE_results_df["-logpval"]=-np.log10(SCEPTRE_results_df["p_value"])
+    SCEPTRE_results_df["signed_logpval"]=SCEPTRE_results_df["effect_sign"]*SCEPTRE_results_df["-logpval"]
+    SCEPTRE_results_df=SCEPTRE_results_df.drop(["effect_sign","-logpval"],axis=1)
+    return SCEPTRE_results_df
+
+def get_crossmodality_correlations(SCEPTRE_results):
+    SCEPTRE_results=get_signed_negative_log_pval(SCEPTRE_results)
+    signedlogpvals=SCEPTRE_results[["response_id","grna_id","signed_logpval","modality"]]
+    signedlogpvals=pd.pivot_table(signedlogpvals, values="signed_logpval", index="response_id", columns=["grna_id","modality"]).reset_index()
+    #get pearson correlation in signed pvals attached to response gene for each guide 
+    correlations = signedlogpvals.corr(numeric_only=True)
+    
+    #ROC-AUC of guides targeting the same vs different gene 
+    #remove self-correlation by excluding the first guide from the other set 
+    correlations_long=pd.melt(correlations,ignore_index=False)
+    correlations_long=correlations_long.rename(columns={"grna_id":"guide2","modality":"modality2"})
+    correlations_long=correlations_long.reset_index()
+    #remove those of the same modality by requiring guide1 to be CRISPRko, guide2 to be CRISPRi 
+    correlations_long=correlations_long[correlations_long["modality"]=="CRISPRko"]
+    correlations_long=correlations_long[correlations_long["modality2"]=="CRISPRi"]
+    
+    correlations_long["same_target_gene"]=correlations_long.apply(lambda x: x["grna_id"].split("_")[0]==x["guide2"].split("_")[0],axis=1)
+    correlations_long = correlations_long[correlations_long['same_target_gene']==True]
+    return correlations_long
+
+day7_SCEPTRE_results=processdata_for_crossmodality_comparison("../SCEPTRE-results/d7_K562_SCEPTRE_results.csv")
+day7_crossmodality_correlations = get_crossmodality_correlations(day7_SCEPTRE_results)
+day10_SCEPTRE_results=processdata_for_crossmodality_comparison("../SCEPTRE-results/d10_K562_SCEPTRE_results.csv")
+day10_crossmodality_correlations = get_crossmodality_correlations(day10_SCEPTRE_results)
+
+day7_day10_crossmodality_correlations = pd.concat([day7_crossmodality_correlations,day10_crossmodality_correlations]).reset_index(drop=True)
+samegene_median_crossmodality_corr_CRISPRi = day7_day10_crossmodality_correlations.groupby('guide2')['value'].median().reset_index().rename(columns = {'value':'median_crossmodality_corr'})
+d7_v_10_CRISPRi_correlations_with_crossmodality = CRISPRidata_withresiduals.merge(samegene_median_crossmodality_corr_CRISPRi,
+                                                                                   left_on='other_grna_id',
+                                                                                   right_on='guide2')
+
+plt.figure()
+plt.scatter(data=d7_v_10_CRISPRi_correlations_with_crossmodality,y='residual',x='median_crossmodality_corr',color='limegreen')
+plt.xlabel('Guide correlation with CRISPRko guides targeting the same gene')
+plt.ylabel('Off-target score')
+plt.title('CRISPRi')
+
+d7_v_10_CRISPRi_correlations_with_crossmodality['guide_id'] = d7_v_10_CRISPRi_correlations_with_crossmodality["other_grna_id"].apply(lambda x: guide_to_shortid[x])
+positive_outliers = d7_v_10_CRISPRi_correlations_with_crossmodality[d7_v_10_CRISPRi_correlations_with_crossmodality['guide_id'].isin(promiscuous_CRISPRi_labels)]
+promiscuous_guide_labels=positive_outliers['guide_id'].tolist()
+promiscuous_guide_targetcorr=positive_outliers["median_crossmodality_corr"].tolist()
+promiscuous_guide_repcorr=positive_outliers["residual"].tolist()
+texts=[]
+for i, txt in enumerate(promiscuous_guide_labels):
+    texts.append(plt.text(promiscuous_guide_targetcorr[i]+0.005, promiscuous_guide_repcorr[i]+0.005, txt,c='limegreen'))
+
+
+plt.savefig("../figures/crossmodality_withingene_correlation_vs_offtarget_score.pdf",bbox_inches="tight",dpi=600)
